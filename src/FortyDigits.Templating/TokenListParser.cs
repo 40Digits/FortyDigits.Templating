@@ -88,7 +88,7 @@ namespace FortyDigits.Templating
             var lastToken = tokens.Last();
             var endsOnString = (lastToken.Key + lastToken.Value.Length) != template.Length;
             var partsCount = (tokens.Length*2) + (endsOnString ? 1 : 0);
-            var dmName = $"Replace{Guid.NewGuid().ToString("N")}";
+            var dmName = string.Format("Replace{0}", Guid.NewGuid().ToString("N"));
 
             DynamicMethod dm = new DynamicMethod(
                 dmName,

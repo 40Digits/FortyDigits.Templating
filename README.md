@@ -4,9 +4,7 @@
 
 FortyDigits.Templating is a client library targeting .NET 4.5 and above that provides a token string replacement that is 
 wicked fast using DynamicMethods. The cost of generating a template with a dynamic render method is expensive, but when you
-reuse this same instance throughout your application it will quickly pay off. The SpeedTest UnitTest is a test that pulls 
-in randomly generated data for 1M people into a ~14KB text template. Initial tests have shown this completing in about 8-10 
-seconds.
+reuse this same instance many times throughout your application it will quickly pay off.
 
 ## Usage examples
 

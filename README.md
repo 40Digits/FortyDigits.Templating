@@ -3,7 +3,7 @@
 ## Overview
 
 FortyDigits.Templating is a client library targeting .NET 4.5 and above that aims to provide extremely fast string replacement 
-in string templates that will be reused many times. When the template instance is created, it will generated a DynamicMethod to 
+in string templates that will be reused many times. When the template instance is created, it will generate a DynamicMethod to 
 replace the tokens that were passed to the parser. The cost of generating a template with a render method that produces IL code 
 at runtime is expensive, but when you reuse this same instance many times throughout your application it will quickly pay off.
 

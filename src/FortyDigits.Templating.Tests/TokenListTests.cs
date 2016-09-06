@@ -76,11 +76,12 @@ namespace FortyDigits.Templating.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void TestNoTokensFound()
         {
             var testString = "The cow jumped over the moon.";
             var template = TemplateParser.GetTemplate(testString);
+
+            Assert.AreEqual(testString, template.Render(Tokens));
         }
 
         [TestMethod]
@@ -92,9 +93,38 @@ namespace FortyDigits.Templating.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof (TokenOverlapException))]
+        public void TestTokenInception()
+        {
+            var testString = "You mean, a token within a token";
+            var tokens = new Dictionary<string, string>
+            {
+                { "token within", "dream within" },
+                { "within a token", "within a dream" }
+            };
+            var templateParser = new TokenListParser(tokens.Keys);
+            var template = templateParser.GetTemplate(testString);
+        }
+
+        [TestMethod]
+        public void TestAdjoiningTokens()
+        {
+            var testString = "Welcome, {{Salutation}}{{LastName}}";
+            var tokens = new Dictionary<string,string>
+            {
+                { "{{Salutation}}", "Mr." },
+                { "{{LastName}}", "Fox" }
+            };
+            var templateParser = new TokenListParser(tokens.Keys);
+            var template = templateParser.GetTemplate(testString);
+
+            Assert.AreEqual("Welcome, Mr.Fox", template.Render(tokens));
+        }
+
+        [TestMethod]
         public void SpeedTest()
         {
-            var templateString = File.ReadAllText(@"App_Data\LoremIpsum.txt");
+            var templateString = Properties.Resources.LoremIpsum;
             var tokens = new[] {"{{FirstName}}", "{{LastName}}", "{{Email}}", "{{Color}}", "{{Music}}", "{{Sport}}"};
 
             var templateParser = new TokenListParser(tokens);

@@ -13,6 +13,9 @@ namespace FortyDigits.Templating
         protected static readonly MethodInfo DictionaryGetMethod;
         protected static readonly MethodInfo StringJoinMethod;
 
+        /// <summary>
+        /// 
+        /// </summary>
         static TokenListParser()
         {
             DictionaryType = typeof(Dictionary<string, string>);
@@ -80,23 +83,16 @@ namespace FortyDigits.Templating
                 .OrderBy(t => t.Key)
                 .ToArray();
 
-            if (!tokens.Any())
-            {
-                throw new InvalidOperationException("No tokens to replace in " + nameof(template));
-            }
-
-            var lastToken = tokens.Last();
-            var endsOnString = (lastToken.Key + lastToken.Value.Length) != template.Length;
-            var partsCount = (tokens.Length*2) + (endsOnString ? 1 : 0);
+            var partsCount = (tokens.Length*2) + 1;
             var dmName = string.Format("Replace{0}", Guid.NewGuid().ToString("N"));
 
-            DynamicMethod dm = new DynamicMethod(
+            var dm = new DynamicMethod(
                 dmName,
                 typeof(string),
                 new [] { DictionaryType },
                 typeof(TokenListParser).Module);
 
-            ILGenerator il = dm.GetILGenerator();
+            var il = dm.GetILGenerator();
             var resultArray = il.DeclareLocal(typeof(string[]));
             var result = il.DeclareLocal(typeof(string));
 
@@ -104,24 +100,31 @@ namespace FortyDigits.Templating
             il.Emit(OpCodes.Ldc_I4_S, partsCount);
             il.Emit(OpCodes.Newarr, typeof(string));
 
-            int charIndex = 0, i, j;
-            for(i = 0, j = 0; i < tokens.Length; i++, j++)
+            int charIndex = 0, stringArrayIndex = 0;
+            for(var i = 0; i < tokens.Length; i++)
             {
                 if (charIndex > tokens[i].Key)
                 {
-                    throw new Exception("Tokens start indices are not allowed to overlap with another token");
+                    if (i > 0)
+                    {
+                        throw new TokenOverlapException(
+                            tokens[i - 1].Key,
+                            tokens[i - 1].Value,
+                            tokens[i].Key,
+                            tokens[i].Value);
+                    }
+
+                    throw new InvalidOperationException("Current char index cannot be larger than first token's char index.");
                 }
 
-                CreateStringPart(il, j, template.Substring(charIndex, tokens[i].Key - charIndex));
-                CreateTokenPart(il, ++j, tokens[i].Value);
+                CreateStringPart(il, stringArrayIndex++, template.Substring(charIndex, tokens[i].Key - charIndex));
+                CreateTokenPart(il, stringArrayIndex++, tokens[i].Value);
 
                 charIndex = tokens[i].Key + tokens[i].Value.Length;
             }
 
-            if (endsOnString)
-            {
-                CreateStringPart(il, j, template.Substring(charIndex));
-            }
+            // assumes we always start and end on a string, possibly an empty string
+            CreateStringPart(il, stringArrayIndex, template.Substring(charIndex));
 
             il.Emit(OpCodes.Stloc, resultArray);
             il.Emit(OpCodes.Ldstr, "");

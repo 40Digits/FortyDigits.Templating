@@ -50,6 +50,7 @@
     <Compile Include="TokenListTemplate.cs" />
     <Compile Include="TokenListParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TokenOverlapException.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
